@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.chad.library.adapter.base.BaseItemDraggableAdapter;
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -24,6 +25,9 @@ public class MyAdapter extends BaseItemDraggableAdapter<Item, BaseViewHolder> {
 
     @Override
     protected void convert(BaseViewHolder helper, Item item) {
+        if (item.getColor().equals("")){
+            return;
+        }
         helper.setBackgroundColor(R.id.color, Color.parseColor(item.getColor()));
         helper.setText(R.id.name,item.getName());
         if (new File(item.getImg()).exists()){

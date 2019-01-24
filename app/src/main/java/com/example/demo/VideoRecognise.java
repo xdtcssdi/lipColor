@@ -111,7 +111,6 @@ public class VideoRecognise extends Activity {
         mAcc = new Accelerometer(VideoRecognise.this);
         mFaceDetector = FaceDetector.createDetector(VideoRecognise.this, null);
 
-
         button_take_photos = findViewById(R.id.take_photos);
         button_take_photos.setOnClickListener(new OnClickListener() {
             @Override
@@ -120,7 +119,6 @@ public class VideoRecognise extends Activity {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
                         try {
-
                             if (faces.length==0){
                                 showTip("未检测到人脸和嘴唇");
                                 return;
@@ -133,7 +131,6 @@ public class VideoRecognise extends Activity {
                             matrix.postRotate(270);
                             //旋转图片
 
-
                             Rect mouthRect = faces[0].mouth;
 
                             int y = (PREVIEW_HEIGHT-mouthRect.right)*2;
@@ -142,8 +139,8 @@ public class VideoRecognise extends Activity {
                             int height = 2*(mouthRect.right-mouthRect.left);
 
                             if (mCameraId==CameraInfo.CAMERA_FACING_BACK){
-                                x = mouthRect.top*2+20;
-                                y = (PREVIEW_HEIGHT-mouthRect.left)*2+10;
+                                x = mouthRect.top*2;
+                                y = (PREVIEW_HEIGHT-mouthRect.left)*2;
                                 width = 2*(mouthRect.bottom-mouthRect.top);
                                 height = 2*(mouthRect.left-mouthRect.right);
                             }
@@ -165,13 +162,12 @@ public class VideoRecognise extends Activity {
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             mBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
 
-                            showTip("图片成功");
+                            showTip("拍照成功");
                             Intent intent = new Intent(getApplicationContext(), ProcessActivity.class);
                             intent.putExtra("data", baos.toByteArray());
                             startActivity(intent);
                         } catch (Exception e) {
-                            showTip("图片保存异常" + e.getMessage());
-                            Log.d(TAG, "onPictureTaken: "+e.getMessage());
+                            showTip("拍照异常" + e.getMessage());
                             e.printStackTrace();
                         }
                     }

@@ -41,9 +41,9 @@ public class ProcessActivity extends AppCompatActivity {
 
                 bg.setBackgroundColor(vibrant.getRgb());
 
-                double hsv = getHsv(vibrant.getRgb());
-                Toast.makeText(ProcessActivity.this, "提取到颜色： " + vibrant.getRgb(), Toast.LENGTH_SHORT).show();
-                vibrant.getHsl();
+                getHsv(vibrant.getRgb());
+                //Toast.makeText(ProcessActivity.this, "提取到颜色： " + vibrant.getRgb(), Toast.LENGTH_SHORT).show();
+                //vibrant.getHsl();
             }
         };
 
@@ -55,7 +55,7 @@ public class ProcessActivity extends AppCompatActivity {
         myDatabaseHelper = new MyDatabaseHelper(this, "data.db", null, 1);
         writableDatabase = myDatabaseHelper.getWritableDatabase();
         Cursor cursor = writableDatabase.query("kouhong", null, null, null, null, null, null);
-        double max_score = -1;
+        double min_score = 1000;
         String name = "默认";
         if (cursor.moveToFirst()) {
             for (int i = 0; i < cursor.getCount(); i++) {
@@ -65,7 +65,7 @@ public class ProcessActivity extends AppCompatActivity {
                 try {
                     sezhi = cursor.getString(2);
                 } catch (Exception e) {
-                    return 0;
+                    continue;
                 }
                 float hsl1[] = new float[3];
                 ColorUtils.colorToHSL(color, hsl1);
@@ -73,15 +73,16 @@ public class ProcessActivity extends AppCompatActivity {
                 ColorUtils.colorToHSL(Color.parseColor(sezhi), hsl2);
                 double dis = ColorUtil.DistanceOf(hsl1, hsl2);
 
-                if (max_score < dis) {
-                    max_score = dis;
+                if (min_score > dis) {
+                    min_score = dis;
                     name = cursor.getString(1);
                 }
             }
         }
-        Toast.makeText(this," 最相似的色号: " + name + " \n 相似度： " + max_score,Toast.LENGTH_SHORT).show();
+        Toast.makeText(this," 最相似的色号: " + name + " \n 相似度： " + (100-min_score)+"%",Toast.LENGTH_SHORT).show();
+        Log.d(TAG, " 最相似的色号: " + name + " \n 相似度： " + (100-min_score)+"%");
 
-        return max_score;
+        return min_score;
     }
 
 }

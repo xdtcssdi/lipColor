@@ -86,7 +86,7 @@ public class AddActivity extends AppCompatActivity {
                     Color.parseColor(sehao_);
                     Toast.makeText(AddActivity.this, "不可输入色值", Toast.LENGTH_SHORT).show();
                     return;
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
 
@@ -128,7 +128,6 @@ public class AddActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             path = getRealFilePath(this, Matisse.obtainResult(data).get(0));
-            Log.d("Matisse", "mSelected: " + path);
             bg.setImageURI(Matisse.obtainResult(data).get(0));
             flag = true;
         }
@@ -151,17 +150,19 @@ public class AddActivity extends AppCompatActivity {
     }
 
     private boolean query(SQLiteDatabase db, String sezhi_) {
-        Cursor cursor = db.query("kouhong", null, null, null, null, null, null);
-        if (cursor.moveToFirst()) {
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.move(i);
 
-                String sezhi = cursor.getString(2);
-                if (sezhi.equals(sezhi_)) {
-                    return true;
-                }
+        String sql = "select * from kouhong where sezhi =?";
+        String[] args = new String[]{sezhi_};
+
+        Cursor cursor = db.rawQuery(sql, args);
+
+        while (cursor.moveToFirst()) {
+            String sezhi = cursor.getString(2);
+            if (sezhi.equals(sezhi_)) {
+                return true;
             }
         }
+
         return false;
     }
 

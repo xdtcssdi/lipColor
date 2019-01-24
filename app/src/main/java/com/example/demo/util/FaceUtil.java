@@ -6,7 +6,6 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.util.Log;
 
 public class FaceUtil {
     /**
@@ -51,16 +50,14 @@ public class FaceUtil {
             face.mouth.top = width - face.mouth.bottom + 10;
             face.mouth.bottom = width - top - 10;
             int left = face.mouth.left;
-            face.mouth.left = height - face.mouth.right - 10;
-            face.mouth.right = height - left + 10;
+            face.mouth.left = height - face.mouth.right - 5;
+            face.mouth.right = height - left + 5;
         }else{
             face.mouth.bottom +=5;//下
             face.mouth.top -= 5;//上
             int left = face.mouth.left;
-            face.mouth.left = height - face.mouth.right + 10;//左
-            face.mouth.right = height - left - 10;//右
-
-            Log.d(TAG, "drawFaceRect: top: "+face.mouth.top+" bottom: "+face.mouth.bottom );
+            face.mouth.left = height - face.mouth.right + 5;//左
+            face.mouth.right = height - left - 5;//右
         }
         canvas.drawRect(face.mouth, paint);
     }
