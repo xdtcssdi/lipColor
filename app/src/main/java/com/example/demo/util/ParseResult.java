@@ -2,6 +2,7 @@ package com.example.demo.util;
 
 import android.graphics.Point;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,13 +12,13 @@ import org.json.JSONTokener;
 import java.util.Iterator;
 
 public class ParseResult {
+	private static final String TAG = "ParseResult";
 	/**
 	 * 离线人脸框结果解析方法
 	 * @param json
 	 * @return
 	 */
-	static public FaceRect[] parseResult(String json){
-		System.out.println("返回结果" +json);
+	static public FaceRect[] parseResult(String json,boolean front){
 		FaceRect[] rect = null;
 		if(TextUtils.isEmpty(json)) {
 			return null;
@@ -55,7 +56,7 @@ public class ParseResult {
 						rect[i].point[point] = new Point(postion.getInt("x"), postion.getInt("y"));
 						point++;
 					}
-
+					Log.d(TAG, "parseResult: " + front);
 					rect[i].mouth.left = landmark.getJSONObject("mouth_left_corner").getInt("y");
 					rect[i].mouth.top = landmark.getJSONObject("mouth_upper_lip_top").getInt("x");
 					rect[i].mouth.right = landmark.getJSONObject("mouth_right_corner").getInt("y");
@@ -63,6 +64,7 @@ public class ParseResult {
 
 
 				} catch (JSONException e) {
+					e.printStackTrace();
 				}
 
 			}

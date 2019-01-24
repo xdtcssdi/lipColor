@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	}
 
 	private void initUI() {
-		button_register = (Button) this.findViewById(R.id.button_register);
+		button_register = findViewById(R.id.button_register);
 		button_register.setOnClickListener(this);
 
 	}

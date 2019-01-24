@@ -33,6 +33,7 @@
         </activity>
         <activity android:name="com.example.demo.VideoRecognise">
         </activity>
+        <activity android:name="com.example.demo.ProcessActivity"/>
     </application>
 
 </manifest>

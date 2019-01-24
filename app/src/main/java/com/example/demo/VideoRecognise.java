@@ -3,22 +3,24 @@ package com.example.demo;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.os.Process;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
@@ -30,27 +32,24 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.widget.ProgressBar;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.Toast;
 
 import com.example.demo.util.FaceRect;
 import com.example.demo.util.FaceUtil;
-import com.example.demo.util.JSONUtil;
 import com.example.demo.util.ParseResult;
 import com.iflytek.cloud.FaceDetector;
 import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.util.Accelerometer;
-import com.example.demo.R;
-import java.io.File;
-import java.io.IOException;
 
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -58,20 +57,14 @@ import okhttp3.RequestBody;
  */
 public class VideoRecognise extends Activity {
 
-    private final static String API_KEY = "lJsij4n8pYEj3bW-tSJqEhRgkdfHobC8";
-    private final static String API_Secret = "i1H3kRBBzJ2Wo_1T-6RsbRmWgcHAREww";
-    private final static int DETECT_SUCCESS = 0X110;
-    private final static int DETECT_FAILED_IOEXCEPTION = 0X111;
-    private final static int DETECT_FAILED_NOFACE = 0X112;
-    private final static String TAG = VideoRecognise.class.getSimpleName();
+    private static final String TAG = "VideoRecognise";
     private SurfaceView mPreviewSurface;
     private SurfaceView mFaceSurface;
-    private AlertDialog dialog = null;
     private Camera mCamera;
     private int mCameraId = CameraInfo.CAMERA_FACING_FRONT;
     // Camera nv21格式预览帧的尺寸，默认设置640*480
-    private int PREVIEW_WIDTH = 640;
-    private int PREVIEW_HEIGHT = 480;
+    private int PREVIEW_WIDTH = 640;  //1280
+    private int PREVIEW_HEIGHT = 480; //960
     // 预览帧数据存储数组和缓存数组
     private byte[] nv21;
     private byte[] buffer;
@@ -84,6 +77,7 @@ public class VideoRecognise extends Activity {
     private boolean mStopTrack;
     private Toast mToast;
     private long mLastClickTime;
+    private Button button_take_photos;
     private Callback mPreviewCallback = new Callback() {
 
         @Override
@@ -102,57 +96,9 @@ public class VideoRecognise extends Activity {
             mScaleMatrix.setScale(width / (float) PREVIEW_HEIGHT, height / (float) PREVIEW_WIDTH);
         }
     };
-    private Handler myhandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            AlertDialog.Builder newdialog = new AlertDialog.Builder(VideoRecognise.this);
-            switch (msg.arg1) {
-                case DETECT_SUCCESS:
-                    newdialog.setCancelable(false);
-                    newdialog.setTitle("温馨提示：");
-                    newdialog.setMessage("恭喜，注册成功！\n点击确定返回主界面");
-                    newdialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    });
-                    dialog.cancel();
-                    newdialog.show();
-                    break;
-                case DETECT_FAILED_IOEXCEPTION:
-                    newdialog.setCancelable(false);
-                    newdialog.setTitle("温馨提示：");
-                    newdialog.setMessage("注册失败！\n请检查网络连接！！");
-                    newdialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    });
-                    dialog.cancel();
-                    newdialog.show();
-                    break;
-                case DETECT_FAILED_NOFACE:
-                    newdialog.setCancelable(false);
-                    newdialog.setTitle("温馨提示：");
-                    newdialog.setMessage("注册失败！\n未检测到人脸，拍照时请保证光线充足且不要逆光！！");
-                    newdialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            initUI();
-                            mCameraId = CameraInfo.CAMERA_FACING_FRONT;
-                            openCamera();
-                            mCamera.startPreview();
-                        }
-                    });
-                    dialog.cancel();
-                    newdialog.show();
-                default:
-                    break;
-            }
-        }
-    };
+
+    private FaceRect[] faces;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,6 +110,100 @@ public class VideoRecognise extends Activity {
         buffer = new byte[PREVIEW_WIDTH * PREVIEW_HEIGHT * 2];
         mAcc = new Accelerometer(VideoRecognise.this);
         mFaceDetector = FaceDetector.createDetector(VideoRecognise.this, null);
+
+
+        button_take_photos = findViewById(R.id.take_photos);
+        button_take_photos.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Camera.PictureCallback jpeg = new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        try {
+
+                            if (faces.length==0){
+                                showTip("未检测到人脸和嘴唇");
+                                return;
+                            }
+
+                            //获取拍到的图片Bitmap
+                            Bitmap bitmap_source = BitmapFactory.decodeByteArray(data, 0, data.length);
+                            // 根据旋转角度，生成旋转矩阵
+                            Matrix matrix = new Matrix();
+                            matrix.postRotate(270);
+                            //旋转图片
+
+
+                            Rect mouthRect = faces[0].mouth;
+
+                            int y = (PREVIEW_HEIGHT-mouthRect.right)*2;
+                            int x = (PREVIEW_WIDTH-mouthRect.top)*2;
+                            int width = 2*(mouthRect.top-mouthRect.bottom);
+                            int height = 2*(mouthRect.right-mouthRect.left);
+
+                            if (mCameraId==CameraInfo.CAMERA_FACING_BACK){
+                                x = mouthRect.top*2+20;
+                                y = (PREVIEW_HEIGHT-mouthRect.left)*2+10;
+                                width = 2*(mouthRect.bottom-mouthRect.top);
+                                height = 2*(mouthRect.left-mouthRect.right);
+                            }
+
+                            Bitmap mBitmap = Bitmap.createBitmap(bitmap_source,x,y,width
+                                    ,height, matrix, false);
+
+                            //裁剪图片压缩图片大小为尺寸1200*900，便于传输存储
+                            //Bitmap mBitmap = mBitmap1.createScaledBitmap(mBitmap1, STORAGE_WIDTH, STORAGE_HEIGHT, false);
+                            switch (mCameraId) {
+                                case Camera.CameraInfo.CAMERA_FACING_FRONT:
+                                    mBitmap = convert(mBitmap, 2);
+                                    break;
+                                case Camera.CameraInfo.CAMERA_FACING_BACK:
+                                    mBitmap = convert(mBitmap, 1);
+                                    break;
+                            }
+
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            mBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+
+                            showTip("图片成功");
+                            Intent intent = new Intent(getApplicationContext(), ProcessActivity.class);
+                            intent.putExtra("data", baos.toByteArray());
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            showTip("图片保存异常" + e.getMessage());
+                            Log.d(TAG, "onPictureTaken: "+e.getMessage());
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                mCamera.takePicture(null, null, jpeg);
+            }
+        });
+
+    }
+
+    private Bitmap convert(Bitmap a, int ca) {
+        int w = a.getWidth();
+        int h = a.getHeight();
+        Bitmap newb = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);// 创建一个新的和SRC长度宽度一样的位图
+        Canvas cv = new Canvas(newb);
+        Matrix m = new Matrix();
+        switch (ca) {
+            case 1:
+                m.postScale(1, -1);//镜像垂直翻转
+                m.postScale(-1, 1);//镜像水平翻转
+                break;
+            case 2:
+                m.postScale(-1, 1);//镜像水平翻转
+                break;
+            case 3:
+                m.postRotate(-90);//旋转-90度
+                break;
+        }
+        Bitmap new2 = Bitmap.createBitmap(a, 0, 0, w, h, m, true);
+        cv.drawBitmap(new2, new Rect(0, 0, new2.getWidth(), new2.getHeight()), new Rect(0, 0, w, h), null);
+        return newb;
+
     }
 
     private void setSurfaceSize() {
@@ -177,12 +217,11 @@ public class VideoRecognise extends Activity {
         mFaceSurface.setLayoutParams(params);
     }
 
-    @SuppressLint("ShowToast")
+    @SuppressLint({"ShowToast", "ClickableViewAccessibility"})
     @SuppressWarnings("deprecation")
     private void initUI() {
-        //button_take_photos = (Button) findViewById(R.id.button_take_photos);
-        mPreviewSurface = (SurfaceView) findViewById(R.id.sfv_preview);
-        mFaceSurface = (SurfaceView) findViewById(com.example.demo.R.id.sfv_face);
+        mPreviewSurface = findViewById(R.id.sfv_preview);
+        mFaceSurface = findViewById(R.id.sfv_face);
         mPreviewSurface.getHolder().addCallback(mPreviewCallback);
         mPreviewSurface.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         mFaceSurface.setZOrderOnTop(true);
@@ -232,116 +271,6 @@ public class VideoRecognise extends Activity {
         mToast = Toast.makeText(VideoRecognise.this, "", Toast.LENGTH_SHORT);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == 1) {
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-                    "/waitForRename.jpg");
-            if (file.exists()) {
-                String username = data.getStringExtra("username");
-                File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                        + "/" + username + "_1.jpg");
-                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                if (!file.renameTo(newFile)) {
-                    builder.setCancelable(false);
-                    builder.setTitle("温馨提示：");
-                    builder.setMessage("文件重命名失败，请检查磁盘空间是否充足？");
-                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialog.cancel();
-                            finish();
-                        }
-                    });
-                    dialog = builder.show();
-                    return;
-                }
-                builder.setCancelable(false);
-                builder.setTitle("温馨提示：");
-                builder.setMessage("正在注册新人脸，请保持网络通畅。");
-                builder.setView(new ProgressBar(this));
-                dialog = builder.show();
-                RegisterFace(newFile);
-            } else {
-                Toast.makeText(this, "错误代码-1，拍照文件保存失败，请检查磁盘空间！", Toast.LENGTH_LONG).show();
-            }
-            //mCamera.startPreview();//保存之后返回预览界面
-        } else {
-            //mCamera.startPreview();//保存之后返回预览界面
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-                    "/waitForRename.jpg");
-            if (file.exists()) {
-                if (file.delete()) {
-                    Toast.makeText(this, "已取消保存人脸", Toast.LENGTH_LONG).show();
-                    initUI();
-                    mCameraId = CameraInfo.CAMERA_FACING_FRONT;
-                    openCamera();
-                    mCamera.startPreview();
-                } else {
-                    Toast.makeText(this, "请检查磁盘空间，人脸删除失败", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-    }
-
-    private void RegisterFace(final File imageFile) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //CommonOperate commonOperate = new CommonOperate(API_KEY,API_Secret,false);
-                // 参数为本地图片文件二进制数组
-                //byte[] image = getBytes(imageFile);   // readImageFile函数仅为示例
-                OkHttpClient client = new OkHttpClient();
-                RequestBody requestBody = postBody(imageFile);
-                Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/detect")
-                        .post(requestBody).build();
-                try {
-                    okhttp3.Response response = client.newCall(request).execute();
-                    String JSON = response.body().string();
-                    Face face = JSONUtil.parseFaceJSON(JSON);
-                    if (face == null) {
-                        Message message = new Message();
-                        message.arg1 = DETECT_FAILED_NOFACE;
-                        myhandler.sendMessage(message);
-                    } else {
-                        face.setImage_path(imageFile.getAbsolutePath());
-                        Message message = new Message();
-                        message.arg1 = DETECT_SUCCESS;
-                        myhandler.sendMessage(message);
-                    }
-                } catch (IOException e) {
-                    Message message = new Message();
-                    message.arg1 = DETECT_FAILED_IOEXCEPTION;
-                    myhandler.sendMessage(message);
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
-
-
-    protected RequestBody postBody(File file) {
-        // 设置请求体
-        MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
-        RequestBody body = MultipartBody.create(MEDIA_TYPE_JPG, file);
-
-        MultipartBody.Builder builder = new MultipartBody.Builder();
-        builder.setType(MultipartBody.FORM);
-        //这里是 封装上传图片参数
-//		// 封装请求参数,这里最重要
-//		HashMap<String, String> params = new HashMap<>();
-//		params.put("api_key",API_KEY);
-//		params.put("api_secret",API_Secret);
-//		//参数以添加header方式将参数封装，否则上传参数为空
-        builder.addFormDataPart("api_key", API_KEY);
-        builder.addFormDataPart("api_secret", API_Secret);
-        builder.addFormDataPart("image_file", file.getName(), body);
-        //builder.addFormDataPart("return_landmark", "1");
-        builder.addFormDataPart("return_attributes", "gender,age,smiling,headpose,facequality,blur,eyestatus,ethnicity");
-        return builder.build();
-    }
-
     private void openCamera() {
         if (null != mCamera) {
             return;
@@ -373,7 +302,10 @@ public class VideoRecognise extends Activity {
 
         Parameters params = mCamera.getParameters();
         params.setPreviewFormat(ImageFormat.NV21);
-        params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
+
+        params.setPreviewSize(PREVIEW_WIDTH,PREVIEW_HEIGHT);
+        params.setPictureSize(1280,960);
+
         mCamera.setParameters(params);
 
         // 设置显示的偏转角度，大部分机器是顺时针90度，某些机器需要按情况设置
@@ -394,7 +326,7 @@ public class VideoRecognise extends Activity {
         }
 
         if (mFaceDetector == null) {
-            /**
+            /*
              * 离线视频流检测功能需要单独下载支持离线人脸的SDK
              * 请开发者前往语音云官网下载对应SDK
              */
@@ -449,7 +381,7 @@ public class VideoRecognise extends Activity {
                     }
 
                     if (mFaceDetector == null) {
-                        /**
+                        /*
                          * 离线视频流检测功能需要单独下载支持离线人脸的SDK
                          * 请开发者前往语音云官网下载对应SDK
                          */
@@ -459,9 +391,8 @@ public class VideoRecognise extends Activity {
                     }
 
                     String result = mFaceDetector.trackNV21(buffer, PREVIEW_WIDTH, PREVIEW_HEIGHT, 1, direction);
-                    Log.d(TAG, "result:" + result);
 
-                    FaceRect[] faces = ParseResult.parseResult(result);
+                    faces = ParseResult.parseResult(result,frontCamera);
 
                     Canvas canvas = mFaceSurface.getHolder().lockCanvas();
                     if (null == canvas) {
@@ -479,8 +410,6 @@ public class VideoRecognise extends Activity {
                     if (frontCamera == (CameraInfo.CAMERA_FACING_FRONT == mCameraId)) {
                         for (FaceRect face : faces) {
                             face.bound = FaceUtil.RotateDeg90(face.bound, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                            //face.mouth = FaceUtil.RotateDeg90(face.mouth, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-
                             if (face.point != null) {
                                 for (int i = 0; i < face.point.length; i++) {
                                     face.point[i] = FaceUtil.RotateDeg90(face.point[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
