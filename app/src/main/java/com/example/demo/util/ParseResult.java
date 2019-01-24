@@ -18,7 +18,7 @@ public class ParseResult {
 	 * @param json
 	 * @return
 	 */
-	static public FaceRect[] parseResult(String json,boolean front){
+	static public FaceRect[] parseResult(String json){
 		FaceRect[] rect = null;
 		if(TextUtils.isEmpty(json)) {
 			return null;
@@ -56,7 +56,7 @@ public class ParseResult {
 						rect[i].point[point] = new Point(postion.getInt("x"), postion.getInt("y"));
 						point++;
 					}
-					Log.d(TAG, "parseResult: " + front);
+
 					rect[i].mouth.left = landmark.getJSONObject("mouth_left_corner").getInt("y");
 					rect[i].mouth.top = landmark.getJSONObject("mouth_upper_lip_top").getInt("x");
 					rect[i].mouth.right = landmark.getJSONObject("mouth_right_corner").getInt("y");

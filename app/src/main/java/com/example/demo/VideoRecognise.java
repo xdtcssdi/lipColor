@@ -392,7 +392,7 @@ public class VideoRecognise extends Activity {
 
                     String result = mFaceDetector.trackNV21(buffer, PREVIEW_WIDTH, PREVIEW_HEIGHT, 1, direction);
 
-                    faces = ParseResult.parseResult(result,frontCamera);
+                    faces = ParseResult.parseResult(result);
 
                     Canvas canvas = mFaceSurface.getHolder().lockCanvas();
                     if (null == canvas) {
@@ -419,8 +419,6 @@ public class VideoRecognise extends Activity {
                             FaceUtil.drawFaceRect(canvas, face, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                                     frontCamera, false);
                         }
-                    } else {
-                        Log.d(TAG, "faces:0");
                     }
 
                     mFaceSurface.getHolder().unlockCanvasAndPost(canvas);
