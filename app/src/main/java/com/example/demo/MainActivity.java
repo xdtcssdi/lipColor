@@ -13,12 +13,13 @@ import android.widget.Button;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-	private Button button_register;
+	private Button button_register,setting;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
 		initUI();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
 			callCamera();
@@ -27,8 +28,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 	private void initUI() {
 		button_register = findViewById(R.id.button_register);
+		setting = findViewById(R.id.setting);
+		setting.setOnClickListener(this);
 		button_register.setOnClickListener(this);
-
 	}
 
 	@Override
@@ -37,6 +39,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 			case R.id.button_register:
 				Intent intent = new Intent(this,VideoRecognise.class);
 				startActivity(intent);
+				break;
+			case R.id.setting:
+				Intent intent1 = new Intent(this,SettingActivity.class);
+				startActivity(intent1);
 				break;
 			default:
 				break;

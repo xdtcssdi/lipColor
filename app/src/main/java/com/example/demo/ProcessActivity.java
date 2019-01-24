@@ -24,11 +24,7 @@ public class ProcessActivity extends AppCompatActivity {
         img = findViewById(R.id.img);
         bg = findViewById(R.id.bg);
         data = getIntent().getByteArrayExtra("data");
-
-
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-
-
         Palette.PaletteAsyncListener listener = new Palette.PaletteAsyncListener() {
             public void onGenerated(Palette palette) {
                 Palette.Swatch vibrant = palette.getVibrantSwatch();
@@ -43,10 +39,6 @@ public class ProcessActivity extends AppCompatActivity {
         };
 
         Palette.generateAsync(bitmap,listener);
-
-
         img.setImageBitmap(bitmap);
     }
-
-
 }
