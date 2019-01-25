@@ -73,7 +73,7 @@ public class App extends Application {
 
         Cursor cursor = db.rawQuery(sql, args);
 
-        while (cursor.moveToFirst()) {
+        while (cursor.moveToNext()) {
             String sezhi = cursor.getString(2);
             if (sezhi.equals(sezhi_)) {
                 return true;
