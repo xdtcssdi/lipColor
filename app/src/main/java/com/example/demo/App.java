@@ -27,29 +27,30 @@ public class App extends Application {
         myDatabaseHelper = new MyDatabaseHelper(this, "data.db", null, 1);
         writableDatabase = myDatabaseHelper.getWritableDatabase();
 
-        insert(writableDatabase,"304加州红","#eb4a47");
-        insert(writableDatabase,"305缪斯红","#df353b");
-        insert(writableDatabase,"306法式红","#c4290a");
-        insert(writableDatabase,"325圣水红","#dd3122");
-        insert(writableDatabase,"315覆盆子红","#b83252");
-        insert(writableDatabase,"317暖柿红","#e24139");
-        insert(writableDatabase,"102优雅米色","#e07b71");
-        insert(writableDatabase,"103迷人茶色","#d75e5e");
-        insert(writableDatabase,"105阳光小麦","#cc585a");
-        insert(writableDatabase,"201糖果玫瑰","#df595f");
-        insert(writableDatabase,"202幻想玫瑰","#d9454f");
-        insert(writableDatabase,"204樱桃玫瑰","#c13248");
-        insert(writableDatabase,"205加仑玫瑰","#e83e5c");
-        insert(writableDatabase,"209明艳玫瑰","#f24c7c");
-        insert(writableDatabase,"210大丽玫瑰","#e96588");
-        insert(writableDatabase,"214复古玫瑰","#d1364e");
-        insert(writableDatabase,"301西瓜红","#e44765");
-        insert(writableDatabase,"302芭比红","#ed5a7d");
+        insert(writableDatabase,"304加州红","#d94843");
+        insert(writableDatabase,"305缪斯红","#e54938");
+        insert(writableDatabase,"306法式红","#ba3a2b");
+        insert(writableDatabase,"325圣水红","#e14528");
+        insert(writableDatabase,"315覆盆子红","#9b363d");
+        insert(writableDatabase,"317暖柿红","#de5338");
+        insert(writableDatabase,"102优雅米色","#eb806c");
+        insert(writableDatabase,"103迷人茶色","#c15e51");
+        insert(writableDatabase,"105阳光小麦","#b95655");
+        insert(writableDatabase,"201糖果玫瑰","#e26464");
+        insert(writableDatabase,"202幻想玫瑰","#e65558");
+        insert(writableDatabase,"204樱桃玫瑰","#b34347");
+        insert(writableDatabase,"205加仑玫瑰","#ce4e60");
+        insert(writableDatabase,"209明艳玫瑰","#e35465");
+        insert(writableDatabase,"210大丽玫瑰","#e7677b");
+        insert(writableDatabase,"214复古玫瑰","#b64556");
+        insert(writableDatabase,"301西瓜红","#e04c4c");
+        insert(writableDatabase,"302芭比红","#e15158");
         insert(writableDatabase,"303珊瑚红","#eb5f77");
-        insert(writableDatabase,"323高雅莓","#da4c79");
-        insert(writableDatabase,"324秀场红","#ee4d5c");
-        insert(writableDatabase,"326勃艮第红","#b42d3f");
-        insert(writableDatabase,"327莓紫红","#c23861");
+        insert(writableDatabase,"323高雅莓","#c14654");
+        insert(writableDatabase,"324秀场红","#ea4d45");
+        insert(writableDatabase,"326勃艮第红","#923542");
+        insert(writableDatabase,"327莓紫红","#993e56");
+        insert(writableDatabase,"307石榴红","#912e2c");
     }
 
 

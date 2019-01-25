@@ -1,6 +1,6 @@
 package com.example.demo.util;
 
-import com.example.demo.Face;
+import com.example.demo.bean.Face;
 
 import org.json.JSONArray;
 import org.json.JSONException;

@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.activity;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -12,13 +12,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.demo.R;
 import com.example.demo.util.MyDatabaseHelper;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
@@ -83,11 +83,14 @@ public class AddActivity extends AppCompatActivity {
                 }
 
                 try {
-                    Color.parseColor(sehao_);
+                    if (sehao_.charAt(0)=='#') {
+                        Color.parseColor(sehao_);
+                        Toast.makeText(AddActivity.this, "不可输入色值", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                } catch (Exception e) {
                     Toast.makeText(AddActivity.this, "不可输入色值", Toast.LENGTH_SHORT).show();
                     return;
-                } catch (Exception e) {
-
                 }
 
                 try {
@@ -144,8 +147,9 @@ public class AddActivity extends AppCompatActivity {
         cValue.put("sezhi", sezhi);
         cValue.put("sehao", sehao);
         cValue.put("path", path);
-        db.insert("kouhong", null, cValue);
-        Toast.makeText(this, "添加成功", Toast.LENGTH_SHORT).show();
+        long i = db.insert("kouhong", null, cValue);
+
+        Toast.makeText(this, "添加成功, result: " +i, Toast.LENGTH_SHORT).show();
         finish();
     }
 

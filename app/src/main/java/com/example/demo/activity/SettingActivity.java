@@ -1,24 +1,20 @@
-package com.example.demo;
+package com.example.demo.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.chad.library.adapter.base.callback.ItemDragAndSwipeCallback;
-import com.chad.library.adapter.base.listener.OnItemSwipeListener;
+import com.example.demo.R;
 import com.example.demo.adapter.MyAdapter;
 import com.example.demo.bean.Item;
 import com.example.demo.util.MyDatabaseHelper;
@@ -61,7 +57,7 @@ public class SettingActivity extends AppCompatActivity {
         itemList = new ArrayList<>();
         adapter = new MyAdapter(R.layout.bg_item, itemList);
         fillData();
-        adapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener(){
+        adapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
                 deleteToDB(position);
@@ -72,7 +68,7 @@ public class SettingActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    private void deleteToDB(final int pos){
+    private void deleteToDB(final int pos) {
         AlertDialog.Builder builder = new AlertDialog.Builder(SettingActivity.this);
         builder.setTitle("提示");
         builder.setMessage("确认删除");
@@ -87,10 +83,11 @@ public class SettingActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
-        builder.setNegativeButton("取消",null);
+        builder.setNegativeButton("取消", null);
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
+
     private void fillData() {
         itemList.clear();
         query(writableDatabase);
@@ -109,28 +106,33 @@ public class SettingActivity extends AppCompatActivity {
 
     private void query(SQLiteDatabase db) {
         Cursor cursor = db.query("kouhong", null, null, null, null, null, null);
-        if (cursor.moveToFirst()) {
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.move(i);
-                String sehao = "";
-                String sezhi="";
-                String path ="";
-                try {
-                    sehao = cursor.getString(1);
-                } catch (Exception ignored) {
-                }
-                try {
-                    sezhi = cursor.getString(2);
-                }catch (Exception ignored){
-                }
-                try {
-                    path = cursor.getString(3);
-                }catch (Exception ignored){
-                }
-                Item item = new Item(sehao, sezhi, path);
-                itemList.add(item);
-            }
+        while (cursor.moveToNext()) {
 
+            String sehao;
+            String sezhi;
+            String path;
+            try {
+                sehao = cursor.getString(1);
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+            try {
+                sezhi = cursor.getString(2);
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+            try {
+                path = cursor.getString(3);
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+            Item item = new Item(sehao, sezhi, path);
+            itemList.add(item);
         }
+        cursor.close();
+
     }
 }
