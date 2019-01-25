@@ -25,19 +25,17 @@ import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.engine.impl.GlideEngine;
 
-import java.util.List;
-
-public class AddActivity extends AppCompatActivity {
+public class EditActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_CHOOSE = 23;
     private EditText sehao;
     private EditText sezhi;
     private Button add, cancel;
     private ImageView bg;
-    private boolean flag;
     private MyDatabaseHelper myDatabaseHelper;
     private SQLiteDatabase writableDatabase;
-    private String path;
+    private String path, color;
+    private Intent intent;
 
     public static String getRealFilePath(final Context context, final Uri uri) {
         if (null == uri) return null;
@@ -62,58 +60,70 @@ public class AddActivity extends AppCompatActivity {
         }
         return data;
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add);
-
-        myDatabaseHelper = new MyDatabaseHelper(this, "data.db", null, 1);
-        writableDatabase = myDatabaseHelper.getWritableDatabase();
+        intent = getIntent();
         sehao = findViewById(R.id.sehao);
         sezhi = findViewById(R.id.sezhi);
         add = findViewById(R.id.add);
+        cancel = findViewById(R.id.cancel);
+        bg = findViewById(R.id.bg);
+
+        color = intent.getStringExtra("color");
+        path = intent.getStringExtra("img");
+        String name = intent.getStringExtra("name");
+
+        bg.setImageBitmap(MyAdapter.getLoacalBitmap(path));
+        sehao.setText(name);
+        sezhi.setText(color);
+
+        myDatabaseHelper = new MyDatabaseHelper(this, "data.db", null, 1);
+        writableDatabase = myDatabaseHelper.getWritableDatabase();
+
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String sehao_ = sehao.getText().toString();
                 String sezhi_ = sezhi.getText().toString();
-                if ("".equals(sehao_) || "".equals(sezhi_) || !flag) {
-                    Toast.makeText(AddActivity.this, "不可为空", Toast.LENGTH_SHORT).show();
+                if ("".equals(sehao_) || "".equals(sezhi_)||"".equals(path)) {
+                    Toast.makeText(EditActivity.this, "不可为空", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 try {
-                    if (sehao_.charAt(0)=='#') {
+                    if (sehao_.charAt(0) == '#') {
                         Color.parseColor(sehao_);
-                        Toast.makeText(AddActivity.this, "不可输入色值", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(EditActivity.this, "不可输入色值", Toast.LENGTH_SHORT).show();
                         return;
                     }
                 } catch (Exception e) {
-                    Toast.makeText(AddActivity.this, "不可输入色值", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EditActivity.this, "不可输入色值", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 try {
                     Color.parseColor(sezhi_);
                 } catch (Exception e) {
-                    Toast.makeText(AddActivity.this, "色值错误", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EditActivity.this, "色值错误", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 insert(writableDatabase, sehao_, sezhi_, path);
             }
         });
-        cancel = findViewById(R.id.cancel);
+
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 finish();
             }
         });
-        bg = findViewById(R.id.bg);
         bg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Matisse.from(AddActivity.this)
+                Matisse.from(EditActivity.this)
                         .choose(MimeType.ofAll(), false) // 选择 mime 的类型
                         .countable(false)
                         .maxSelectable(1) // 图片选择的最多数量
@@ -125,6 +135,7 @@ public class AddActivity extends AppCompatActivity {
             }
         });
 
+
     }
 
     @Override
@@ -133,7 +144,6 @@ public class AddActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             path = getRealFilePath(this, Matisse.obtainResult(data).get(0));
             bg.setImageURI(Matisse.obtainResult(data).get(0));
-            flag = true;
         }
     }
 
@@ -144,18 +154,22 @@ public class AddActivity extends AppCompatActivity {
             return;
         }
 
-        ContentValues cValue = new ContentValues();
-        cValue.put("sezhi", sezhi);
-        cValue.put("sehao", sehao);
-        cValue.put("path", path);
-        long i = db.insert("kouhong", null, cValue);
+        ContentValues values = new ContentValues();
 
-        Toast.makeText(this, "添加成功, result: " +i, Toast.LENGTH_SHORT).show();
+        values.put("sezhi", sezhi);
+        values.put("sehao", sehao);
+        values.put("path", path);
+
+        int i = db.update("kouhong", values, "sezhi = ?", new String[]{color});
+        Toast.makeText(this, "添加成功, result: " + i, Toast.LENGTH_SHORT).show();
         finish();
     }
 
     private boolean query(SQLiteDatabase db, String sezhi_) {
 
+        if (color.equals(sezhi_)) {
+            return false;
+        }
         String sql = "select * from kouhong where sezhi =?";
         String[] args = new String[]{sezhi_};
 

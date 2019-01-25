@@ -8,6 +8,8 @@ import android.graphics.Point;
 import android.graphics.Rect;
 
 public class FaceUtil {
+    private static final String TAG = "FaceUtil";
+
     /**
      * 在指定画布上将人脸框出来
      *
@@ -47,13 +49,13 @@ public class FaceUtil {
 
         if (frontCamera) {
             int top = face.mouth.top;
-            face.mouth.top = width - face.mouth.bottom + 10;
-            face.mouth.bottom = width - top - 10;
+            face.mouth.top = width - face.mouth.bottom + 8;
+            face.mouth.bottom = width - top - 16;
             int left = face.mouth.left;
-            face.mouth.left = height - face.mouth.right - 5;
-            face.mouth.right = height - left + 5;
-        }else{
-            face.mouth.bottom +=5;//下
+            face.mouth.left = height - face.mouth.right;
+            face.mouth.right = height - left;
+        } else {
+            face.mouth.bottom += 5;//下
             face.mouth.top -= 5;//上
             int left = face.mouth.left;
             face.mouth.left = height - face.mouth.right + 5;//左
@@ -61,8 +63,6 @@ public class FaceUtil {
         }
         canvas.drawRect(face.mouth, paint);
     }
-
-    private static final String TAG = "FaceUtil";
 
     /**
      * 将矩形随原图顺时针旋转90度

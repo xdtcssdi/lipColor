@@ -47,9 +47,6 @@
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
   </component>
-  <component name="DBNavigator.Project.FileConnectionMappingManager">
-    <mapping file-url="file://$USER_HOME$/Documents/AndroidStudio/DeviceExplorer/xiaomi-mi_6x-d713c46d/data/data/com.example.demo/databases/data.db" connection-id="c1b1a215-8523-417e-9e06-4fb4f568fc9b" session-id="MAIN" current-schema="main" />
-  </component>
   <component name="DBNavigator.Project.MethodExecutionManager">
     <method-browser />
     <execution-history>

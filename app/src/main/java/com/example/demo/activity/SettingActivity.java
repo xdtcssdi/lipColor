@@ -11,9 +11,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
-
-import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.example.demo.R;
 import com.example.demo.adapter.MyAdapter;
 import com.example.demo.bean.Item;
@@ -55,38 +52,11 @@ public class SettingActivity extends AppCompatActivity {
         });
         recyclerView.setLayoutManager(manager);
         itemList = new ArrayList<>();
-        adapter = new MyAdapter(R.layout.bg_item, itemList);
+        adapter = new MyAdapter(this,itemList);
         fillData();
-        adapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
-                deleteToDB(position);
-                return false;
-            }
-        });
-
         recyclerView.setAdapter(adapter);
     }
 
-    private void deleteToDB(final int pos) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(SettingActivity.this);
-        builder.setTitle("提示");
-        builder.setMessage("确认删除");
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String where = "sezhi = ?";
-                String[] whereValue = {itemList.get(pos).getColor()};
-                itemList.remove(pos);
-                writableDatabase.delete("kouhong", where, whereValue);
-                Toast.makeText(SettingActivity.this, "确定删除", Toast.LENGTH_SHORT).show();
-                adapter.notifyDataSetChanged();
-            }
-        });
-        builder.setNegativeButton("取消", null);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
 
     private void fillData() {
         itemList.clear();
@@ -97,38 +67,19 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case 6324:
-                fillData();
-                break;
-        }
+        fillData();
     }
 
     private void query(SQLiteDatabase db) {
         Cursor cursor = db.query("kouhong", null, null, null, null, null, null);
         while (cursor.moveToNext()) {
-
             String sehao;
             String sezhi;
             String path;
-            try {
-                sehao = cursor.getString(1);
-            } catch (Exception e) {
-                e.printStackTrace();
-                continue;
-            }
-            try {
-                sezhi = cursor.getString(2);
-            } catch (Exception e) {
-                e.printStackTrace();
-                continue;
-            }
-            try {
-                path = cursor.getString(3);
-            } catch (Exception e) {
-                e.printStackTrace();
-                continue;
-            }
+            sehao = cursor.getString(1);
+            sezhi = cursor.getString(2);
+            path = cursor.getString(3);
+
             Item item = new Item(sehao, sezhi, path);
             itemList.add(item);
         }

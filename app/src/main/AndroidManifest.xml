@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -37,6 +37,7 @@
         <activity android:name=".activity.ProcessActivity" />
         <activity android:name=".activity.SettingActivity" />
         <activity android:name=".activity.AddActivity"></activity>
+        <activity android:name=".activity.EditActivity"></activity>
     </application>
 
 </manifest>

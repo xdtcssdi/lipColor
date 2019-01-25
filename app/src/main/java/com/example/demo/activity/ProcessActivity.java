@@ -1,5 +1,6 @@
 package com.example.demo.activity;
 
+import android.app.WallpaperManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -9,19 +10,25 @@ import android.os.Bundle;
 import android.support.v4.graphics.ColorUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.demo.R;
+import com.example.demo.adapter.MyAdapter;
 import com.example.demo.util.ColorUtil;
 import com.example.demo.util.MyDatabaseHelper;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+
 public class ProcessActivity extends AppCompatActivity {
-    private static final String TAG = "ProcessActivity";
     private byte[] data;
-    private ImageView img, bg, sehao;
+    private ImageView img, bg, sehao,bkg;
     private TextView sb, sh;
+    private Button change;
     private MyDatabaseHelper myDatabaseHelper;
     private SQLiteDatabase writableDatabase;
 
@@ -29,11 +36,20 @@ public class ProcessActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_process);
+        change = findViewById(R.id.change);
+        bkg = findViewById(R.id.background);
         sb = findViewById(R.id.sb);
         sh = findViewById(R.id.sh);
         sehao = findViewById(R.id.sehao);
         img = findViewById(R.id.img);
         bg = findViewById(R.id.bg);
+        change.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                changeBG();
+            }
+        });
+
         data = getIntent().getByteArrayExtra("data");
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
         Palette.PaletteAsyncListener listener = new Palette.PaletteAsyncListener() {
@@ -60,7 +76,6 @@ public class ProcessActivity extends AppCompatActivity {
         String name = "默认";
         String sezhi_ = "ff0000";
         while (cursor.moveToNext()) {
-
             String sezhi;
             try {
                 sezhi = cursor.getString(2);
@@ -77,6 +92,7 @@ public class ProcessActivity extends AppCompatActivity {
                 min_score = dis;
                 name = cursor.getString(1);
                 sezhi_ = cursor.getString(2);
+                path = cursor.getString(3);
             }
 
         }
@@ -90,9 +106,19 @@ public class ProcessActivity extends AppCompatActivity {
         sb.setText("识别出：#" + hr + hg + hb);
         sh.setText("相似色号：" + name + " 色值:" + sezhi_);
         sehao.setBackgroundColor(Color.parseColor(sezhi_));
+        bkg.setImageBitmap(MyAdapter.getLoacalBitmap(path));
         Toast.makeText(this, " 最相似的色号: " + name + " \n 相似度： " + (100 - min_score) + "%", Toast.LENGTH_SHORT).show();
 
         return min_score;
     }
-
+    private String path;
+    public void changeBG() {
+        try {
+            WallpaperManager manager = WallpaperManager.getInstance(this);
+            FileInputStream fileInputStream = new FileInputStream(path);
+            manager.setStream(fileInputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
